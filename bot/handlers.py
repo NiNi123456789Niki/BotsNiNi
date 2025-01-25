@@ -568,4 +568,4 @@ async def privacy_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = []
     keyboard.append([InlineKeyboardButton("Политика конфиденциальности", url="https://t.me/NiNi_bots_bot/privacy_policy")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Откройте политику конфиденциальности через эту кнопку (Или откройте напрямую в браузере: https://nini123456789niki.github.io/bot/):", reply_markup=reply_markup)
+    await update.message.reply_text("Откройте политику конфиденциальности через эту кнопку (Или откройте напрямую в браузере: https://nini123456789niki.github.io/BotsNiNi/):", reply_markup=reply_markup)
