@@ -1,0 +1,10 @@
+__pycache__
+.venv
+db.sqlite3
+CHAT_ID.txt
+KEY.txt
+PROVIDER_KEY.txt
+test.py
+.vscode
+.env
+env

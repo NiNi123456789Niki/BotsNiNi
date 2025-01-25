@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Политика конфиденциальности NiNi bots</title>
+		<style>
+			body::-webkit-scrollbar {
+				display: none;
+			}
+
+			body {
+				font-family: "Open Sans", sans-serif;
+				line-height: 1.6;
+				margin: 0;
+				padding: 0;
+				background-color: #f8f9fa;
+				color: #343a40;
+				scrollbar-width: none;
+			}
+			.important {
+				color: #fa0f17;
+				font-weight: bold;
+			}
+			.container {
+				width: 80%;
+				margin: auto;
+				overflow: hidden;
+			}
+
+			header {
+				background-color: #2c3e50;
+				color: #343a40;
+				padding-top: 30px;
+				min-height: 70px;
+				border-bottom: #77aaff 3px solid;
+			}
+
+			header a {
+				color: #fff;
+				text-decoration: none;
+				text-transform: uppercase;
+				font-size: 16px;
+			}
+
+			header h1 {
+				font-size: 2em;
+				margin-bottom: 0.5em;
+			}
+
+			.main {
+				padding: 20px 40px;
+				background: #fff;
+				margin-top: 20px;
+			}
+
+			p {
+				margin-bottom: 1em;
+			}
+
+			h2 {
+				font-size: 1.5em;
+				margin-bottom: 1em;
+				color: #007bff;
+			}
+
+			h3 {
+				font-size: 1.2em;
+				color: #fa0f17;
+				margin-bottom: 0.5em;
+			}
+
+			.main a {
+				color: #007bff;
+				text-decoration: underline;
+			}
+
+			footer {
+				background: #333;
+				color: #fff;
+				text-align: center;
+				padding: 10px;
+				margin-top: 20px;
+			}
+
+			#progress-container {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				width: 100%;
+				border: 1px solid #ddd;
+				z-index: 100;
+				padding-top: 10px;
+				background-color: #f8f9fa;
+				padding: 10px 20px;
+				border: none;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				transition: top 0.3s ease;
+				height: 20px;
+			}
+
+			body,
+			header,
+			#progress-container {
+				background-color: #f8f9fa;
+			}
+			#progress-bar {
+				height: 10px;
+				background-color: #0e05c4;
+				transition: width 0.3s ease;
+				border-radius: 5px;
+				margin-top: 10px;
+			}
+			#progress-percent {
+				position: absolute;
+				top: 10px;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				color: rgb(62, 62, 62);
+				z-index: 101;
+			}
+			.dark-mode #progress-percent {
+				color: #f8f9fa;
+			}
+			body.dark-mode {
+				background-color: #1b1e1f;
+				color: #f8f9fa;
+			}
+
+			.dark-mode header {
+				background-color: #1b1e1f;
+				color: #f8f9fa;
+				border-bottom-color: #00368f;
+			}
+
+			.dark-mode .main {
+				background-color: #181a1b;
+				color: #e9ecef;
+			}
+			.dark-mode footer {
+				background: #262a2b;
+				color: #fff;
+			}
+
+			.dark-mode #progress-container {
+				background-color: #343a40;
+				border-color: #0062cc;
+			}
+			.dark-mode h2 {
+				color: #94caff;
+			}
+			.dark-mode .main a {
+				color: #94caff;
+			}
+
+			#theme-toggle {
+				position: fixed;
+				top: 50px;
+				right: 20px;
+				padding: 15px 20px;
+				font-size: 16px;
+				background-color: #007bff;
+				color: white;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				z-index: 101;
+				transition: all 0.4s ease;
+				display: flex;
+				align-items: center;
+			}
+
+			#theme-toggle:hover {
+				background-color: #0056b3;
+				transform: scale(1.05);
+			}
+
+			#theme-toggle:focus {
+				outline: none;
+				box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+			}
+
+			#theme-toggle::before {
+				content: "";
+			}
+
+			::-webkit-scrollbar {
+				width: 0;
+			}
+
+			#theme-toggle::before {
+				content: "☀️";
+				transition: margin 0.4s ease, transform 0.5s ease;
+				transform: scale(1.2);
+				margin-left: 0px;
+				margin-right: 90px;
+			}
+
+			body.dark-mode #theme-toggle::before {
+				content: "🌙";
+				margin-right: 15px;
+				margin-left: 75px;
+				transform: scale(1.2) translateX(10px);
+			}
+
+			body.dark-mode #theme-toggle {
+				background-color: #ffc107;
+			}
+
+			body.dark-mode #theme-toggle:hover {
+				background-color: #e0a800;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="progress-container">
+			<div id="progress-bar"></div>
+			<div id="progress-percent"></div>
+		</div>
+		<button id="theme-toggle"></button>
+		<header>
+			<div class="container">
+				<h1>Политика конфиденциальности бота @NiNI_bots_bot</h1>
+			</div>
+		</header>
+		<div class="container main">
+			<h2>1. Введение</h2>
+			<h3>
+				<strong
+					>1.1. Этот документ описывает, как бот NiNi bots собирает, использует
+					и защищает вашу личную информацию. Мы стремимся защищать вашу
+					конфиденциальность и просим вас внимательно ознакомиться с данной
+					политикой.</strong
+				>
+			</h3>
+
+			<p>
+				<strong>1.2. Платформа</strong> - это сервис Telegram (далее как
+				"платформа").
+			</p>
+			<p>
+				<strong>1.3. NiNi bots </strong> - это сервис, разрабатывающий ботов на
+				платформе для пользователей Telegram (далее как "сервис", "мы", "нас").
+			</p>
+			<p>
+				<strong>1.4. Пользователь</strong> - это человек, который использует
+				сервис (далее как "вы").
+			</p>
+			<p>
+				<strong>1.5. @NiNI_bots_bot </strong> - это официальный бот сервиса
+				(далее как "бот").
+			</p>
+
+			<p>
+				<strong>1.6. Политика конфиденциальности </strong> - это документ,
+				регулирующий отношения между ботом и пользователем.
+			</p>
+
+			<h2>2. Собираемая информация и её использование</h2>
+			<p>
+				<strong>2.1.</strong> Когда пользователь начинает взаимодействие с
+				ботом, он неявно соглашается на передачу боту определенной информации,
+				необходимой для работы бота. Это включает все последующие пункты.
+			</p>
+			<p>
+				<strong>2.2.</strong> <strong>Ваш username</strong> - Используется для
+				идентификации и обращения к вам в боте.
+			</p>
+
+			<p>
+				<strong>2.3.</strong> <strong>Ваш Telegram ID</strong> - Используется
+				для идентификации.
+			</p>
+			<p>
+				<strong>2.4.</strong> <strong>Текстовые сообщения</strong> - Весь текст,
+				который вы отправляете боту. Мы принимаем все необходимые меры для
+				защищаем эту информацию (В соответствии с пункт 4.2
+				<a href="https://telegram.org/tos/bots "
+					>Политикой конфиденциальности ботов платформы</a
+				>).
+			</p>
+
+			<p>
+				<strong>2.5.</strong> Если по какой-то причине вы не доверяете или не
+				верите нам, мы предоставляем
+				<a href="https://github.com/NiNi123456789Niki/bot"
+					>открытый исходной код</a
+				>.
+			</p>
+
+			<h2>3. Защита информации</h2>
+			<p>
+				<strong>3.1.</strong> Мы принимаем разумные меры для защиты вашей
+				информации от несанкционированного доступа, использования, раскрытия,
+				изменения или уничтожения. Обратите внимание, что ни один метод передачи
+				данных через Интернет или метод электронного хранения не является на
+				100% безопасным.
+			</p>
+			<p>
+				<strong>3.2.</strong> Мы не храним вашу информацию в открытом доступе.
+				Ваша информация обрабатывается на защищенных серверах с ограниченным
+				доступом.
+			</p>
+			<p>
+				<strong>3.3.</strong> Мы не передаем вашу информацию третьим лицам, за
+				исключением случаев, предусмотренных законодательством [например, по
+				запросу правоохранительных органов].
+			</p>
+			<p>
+				<strong>3.4.</strong> Ваша информация (Ваш username, Telegram ID и
+				сообщения) шифруются по необходимым меркам.
+			</p>
+
+			<h2>4. Ваши права</h2>
+			<p>
+				<strong>4.1.</strong> Вы имеете право запросить доступ к своей личной
+				информации, ее исправление или удаление. Для этого свяжитесь с тех.
+				поддержкой бота (командой бота /support).
+			</p>
+			<p>
+				<strong>4.2.</strong> Вы имеете право запросить дополнительную
+				информацию по использованию конкретно ваших данных, для этого обратитесь
+				в техническую поддержку бота (командой бота /support).
+			</p>
+
+			<h2>5. Вопросы к технической поддержке бота</h2>
+			<p>
+				<strong>5.1.</strong> Если у вас возникли проблемы с взаимодействием с
+				ботом (проблемы с оплатой, проблемы с обращением), вы вправе написать в
+				тех. поддержку бота (командой бота /support) или по почте
+				ninibotssupp@gmail.com.
+			</p>
+
+			<p class="important">
+				<strong>5.2.</strong> Мы вправе не отвечать на ваши обращения, если они
+				не относятся к боту, неправильно сформулированы или если это шуточные
+				высказывания. <strong>Внимание!</strong> Мы отвечаем на вопросы,
+				связанные с работой бота. Мы оставляем за собою права заблокировать вас
+				<strong>без предупреждения</strong> за сообщения, содержащие
+				оскорбления, ненормативную лексику или не относящиеся к работе бота.
+			</p>
+
+			<h2>6. Изменения в политике конфиденциальности</h2>
+			<p>
+				<strong>6.1.</strong> Мы оставляем за собою право вносить изменения в
+				политику конфиденциальности. Мы оповещаем о обновлении политики
+				конфиденциальности в
+				<a href="https://t.me/+8ObRwj1-IjExMDRi"
+					>новостном канале на платформе</a
+				>.
+			</p>
+
+			<h2>7. Оплата и ожидание</h2>
+			<p>
+				<strong>7.1. </strong> Оплата происходит на платформе с помощью
+				<a href="http://click.uz">Click</a> на платформе.
+			</p>
+			<p>
+				<strong>7.2. </strong> Если вы не оплачиваете заказ, после отправления
+				запроса на оплату, мы вправе удалить ваш заказ и использовать конечный
+				результат в других заказах.
+			</p>
+			<p>
+				<strong>7.3. </strong> Если вы не оплачиваете заказ второй раз, после
+				отправления запроса на оплату, мы вправе заблокировать ваш аккаунт без
+				возможности разблокировки.
+			</p>
+			<h2>8. Контактная информация</h2>
+			<p>
+				<strong>8.1. </strong>Если у вас есть вопросы относительно политики
+				конфиденциальности, пожалуйста, свяжитесь с нами по адресу
+				ninibotssupp@gmail.com или напрямую в тех. поддержку бота командой бота
+				/support.
+			</p>
+
+			<p><strong>Дата последнего обновления:</strong> 09.01.2025</p>
+		</div>
+		<footer>
+			<p>NiNi bots &copy; 2025</p>
+		</footer>
+		<script>
+			window.addEventListener("scroll", updateProgressBar)
+			let lastScrollPercent = 0
+
+			function updateProgressBar() {
+				const progressBar = document.getElementById("progress-bar")
+				const progressContainer = document.getElementById("progress-container")
+				const progressPercent = document.getElementById("progress-percent")
+				const scrollTop =
+					window.pageYOffset || document.documentElement.scrollTop
+				const scrollHeight =
+					document.documentElement.scrollHeight -
+					document.documentElement.clientHeight
+				const scrollPercent = (scrollTop / scrollHeight) * 100
+
+				if (scrollPercent > lastScrollPercent) {
+					lastScrollPercent = scrollPercent
+				}
+
+				progressBar.style.width = lastScrollPercent - 3 + "%"
+				progressPercent.textContent = Math.round(lastScrollPercent) + "%"
+
+				if (scrollTop > progressContainer.offsetHeight) {
+					progressContainer.style.top = "0"
+				} else {
+					progressContainer.style.top = "-60px"
+				}
+			}
+
+			updateProgressBar()
+
+			const themeToggleBtn = document.getElementById("theme-toggle")
+			const body = document.body
+
+			const savedTheme = localStorage.getItem("theme")
+			if (savedTheme === "dark") {
+				body.classList.add("dark-mode")
+			} else {
+				body.classList.remove("dark-mode")
+				localStorage.setItem("theme", "light")
+			}
+
+			themeToggleBtn.addEventListener("click", () => {
+				body.classList.toggle("dark-mode")
+
+				localStorage.setItem(
+					"theme",
+					body.classList.contains("dark-mode") ? "dark" : "light"
+				)
+			})
+		</script>
+	</body>
+</html>
