@@ -22,8 +22,8 @@
 
 **Important**: You must have Python and PostgreSQL installed.
 
-This bot is developed using the [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot), [schedule](https://github.com/dbader/schedule), [python-dotenv](https://github.com/theskumar/python-dotenv) and [psycopg2][https://github.com/psycopg/psycopg2] libraries.
-Comments for this project made by [Google Gemini][https://gemini.google.com/], if you don't need comments, see the SMALL COMMIT.
+This bot is developed using the [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot), [schedule](https://github.com/dbader/schedule), [python-dotenv](https://github.com/theskumar/python-dotenv) and [psycopg2](https://github.com/psycopg/psycopg2) libraries.
+Comments for this project made by [Google Gemini](https://gemini.google.com/), if you don't need comments, see the SMALL COMMIT.
 
 ---
 
@@ -51,5 +51,5 @@ Comments for this project made by [Google Gemini][https://gemini.google.com/], i
 
 **ВАЖНО**: У вас должен быть установлен Python и PostgreSQL.
 
-Этот бот разработан с использованием библиотек [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot), [schedule](https://github.com/dbader/schedule), [python-dotenv](https://github.com/theskumar/python-dotenv) и [psycopg2][https://github.com/psycopg/psycopg2].
-Комментарии для проекта сделаны с помощью [Google Gemini][https://gemini.google.com/], если вам не нужны комментарии см коммит SMALL COMMIT.
+Этот бот разработан с использованием библиотек [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot), [schedule](https://github.com/dbader/schedule), [python-dotenv](https://github.com/theskumar/python-dotenv) и [psycopg2](https://github.com/psycopg/psycopg2).
+Комментарии для проекта сделаны с помощью [Google Gemini](https://gemini.google.com/), если вам не нужны комментарии см коммит SMALL COMMIT.
