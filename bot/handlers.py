@@ -10,9 +10,15 @@ import ast
 from bot.config import YOUR_CHAT_ID, PROVIDER_TOKEN
 from bot.utils import load_subscriptions, save_subscriptions
 import encrypter
+from bot import spam
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
 
 logger = logging.getLogger(__name__)
 
+# Dictionary containing FAQ questions and answers
 FAQ_QUESTIONS = {
     "Как сделать заказ?": "Для заказа воспользуйтесь командой /order и опишите ваш запрос.",
     "Какие сроки выполнения заказов?": "Сроки выполнения зависят от сложности заказа, но обычно около недели в загруженные и три дня в менее загруженные.",
@@ -36,8 +42,8 @@ PRICE_WAITING, LINK_WAITING, DESCRIPTION_WAITING, SUPPORT_WAITING, ANSWER_WAITIN
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Sends a welcome message with options to the user when the /start command is used."""
     keyboard = []
-    keyboard.append([KeyboardButton("Заказать бота"), KeyboardButton("Написать в поддержку")])
-    keyboard.append([KeyboardButton("Оставить отзыв"), KeyboardButton("FAQ")])
+    keyboard.append([KeyboardButton("Заказать бота"), KeyboardButton("Написать в поддержку")]) # Buttons for ordering and support
+    keyboard.append([KeyboardButton("Оставить отзыв"), KeyboardButton("FAQ")]) # Buttons for feedback and FAQ
 
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True) # Create a custom keyboard for user interaction.
     await update.message.reply_text('Вас приветствует бот NiNi bots, после ознакомления с политикой конфиденциальности выберите опцию. Продолжая пользоваться ботом вы соглашаетесь с политикой конфиденциальности', reply_markup=reply_markup) # Send the welcome message with the keyboard.
@@ -173,170 +179,7 @@ async def send_faq_page(update: Update, context: ContextTypes.DEFAULT_TYPE, page
         )
         context.user_data['faq_message_id'] = new_message.message_id # Store the new message ID.
 
-async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles inline button callbacks."""
-    query = update.callback_query # Get the callback query.
-    await query.answer() # Acknowledge the callback query to prevent button from spinning.
 
-    if query.data.startswith("faq_"): # If the callback is for a specific FAQ question.
-        question_index = int(query.data.split('_')[1]) # Extract question index from callback data.
-        question = list(FAQ_QUESTIONS.keys())[question_index] # Get question text from index.
-        answer = FAQ_QUESTIONS[question] # Get answer text for the question.
-
-        keyboard = [
-            [InlineKeyboardButton("НАЗАД", callback_data="back_to_faq")] # Button to go back to FAQ question list.
-        ]
-
-        await query.edit_message_text( # Edit the message to display the question and answer.
-            text=f"<b><strong>{question}</strong></b>\n{answer}",
-            parse_mode="HTML", # Enable HTML parsing for bold text.
-            reply_markup=InlineKeyboardMarkup(keyboard) # Add "НАЗАД" button.
-        )
-
-    elif query.data == "back_to_faq": # If callback is to go back to FAQ question list.
-        page = context.user_data.get('faq_page', 0) # Get current FAQ page from user data.
-        await send_faq_page(update, context, page) # Resend the FAQ page.
-
-    elif query.data == "next_page": # If callback is to go to the next FAQ page.
-        page = context.user_data.get('faq_page', 0) + 1 # Increment page number.
-        context.user_data['faq_page'] = page # Update page number in user data.
-        await send_faq_page(update, context, page) # Resend the FAQ page.
-
-    elif query.data == "prev_page": # If callback is to go to the previous FAQ page.
-        page = context.user_data.get('faq_page', 0) - 1 # Decrement page number.
-        context.user_data['faq_page'] = page # Update page number in user data.
-        await send_faq_page(update, context, page) # Resend the FAQ page.
-    elif query.data in ("CHECKING", "MAKING", "PAYING", "COMPLETED"): # If callback is for order status filtering (admin panel).
-        message = ""
-        orders_str = order_operations.get_orders(query.data) # Get orders with the selected status from the database.
-        orders_list = ast.literal_eval(orders_str) # Convert the string representation of list of dicts to actual list of dicts.
-
-        keyboard = []
-
-        if orders_list: # If there are orders with the selected status.
-            for order in orders_list: # Iterate through each order.
-                user_id = order['userid'] # Get user ID from order data.
-                desc = order['description'] # Get order description.
-                ord_id = order['order_id'] # Get order ID.
-                username = user_operations.get_username(user_id) # Get username from user ID.
-                message += f"Заказ {ord_id}: \n Пользователь {username} с id {user_id} заказал бота в описанием \"{desc}\". \n" # Build message string with order details.
-                keyboard.append([InlineKeyboardButton(f"{ord_id}", callback_data=f"ord_{ord_id}")]) # Add button for each order ID.
-            reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with order ID buttons.
-            await query.edit_message_text(text=message, reply_markup=reply_markup) # Edit message to display order list with buttons.
-        else: # If no orders found with the selected status.
-            await query.edit_message_text(text="Нет заказов с данным статусом.") # Inform admin that no orders found.
-    elif query.data.startswith("ord_"): # If callback is for a specific order (admin panel).
-        data = query.data[4:] # Extract order ID from callback data.
-        order = order_operations.get_order(data) # Get order details from database using order ID.
-        if order: # If order is found.
-            user_id = order[0] # Get user ID from order data.
-            desc = order[1] # Get order description.
-            status = order[2] # Get order status.
-            price = order[3] # Get order price.
-            if price is None: # If price is not set yet.
-                price = "пока не указана" # Display "пока не указана".
-            else:
-                price = order[3] # Otherwise, display the actual price.
-            username = user_operations.get_username(user_id) # Get username from user ID.
-
-            keyboard = []
-            if status == "CHECKING": # If order status is "CHECKING".
-                keyboard.append([InlineKeyboardButton("Попросить уточнение", callback_data=f"cor_{user_id}_{data}")]) # Add button to request clarification.
-                keyboard.append([InlineKeyboardButton("Начать выполнение", callback_data=f"mk_{data}_{user_id}")]) # Add button to start making the bot.
-            elif status == "MAKING": # If order status is "MAKING".
-                keyboard.append([InlineKeyboardButton("Закончить выполнение", callback_data=f"py_{data}_{user_id}")]) # Add button to mark order as ready for payment.
-            if price == 'None': # If price is not set.
-                keyboard.append([InlineKeyboardButton("Установить цену", callback_data=f"pr_{data}")]) # Add button to set price.
-            keyboard.append([InlineKeyboardButton("Забанить пользователя", callback_data=f"bn_{user_id}")]) # Add button to ban user.
-            keyboard.append([InlineKeyboardButton("Установить время", callback_data=f"stm_{user_id}")]) # Add button to set time for order completion.
-            keyboard.append([InlineKeyboardButton("Удалить заказ", callback_data=f"delord_{data}")]) # Add button to delete order.
-            keyboard.append([InlineKeyboardButton("НАЗАД", callback_data=status)]) # Button to go back to status order list.
-            reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with order actions.
-
-            await query.edit_message_text(text=f"Заказ {data}: \nЗаказал: {username}\nID автора заказа: {user_id}\nОписание(Что нужно сделать): {desc}\nСтатус: {status} \nЦена: {price}.", reply_markup=reply_markup) # Edit message to display order details and action buttons.
-        else: # If order is not found.
-            await query.edit_message_text(text=f"Заказ с ID {data} не найден.") # Inform admin that order not found.
-    elif query.data.startswith("stm_"): # If callback is to set time for order completion (admin panel).
-        data = query.data[4:] # Extract user ID from callback data.
-        await query.edit_message_text("Пожалуйста укажите время...") # Ask admin to input time.
-        context.user_data['user_id_for_time'] = data # Store user ID in user data to use in next message handler.
-        logging.info(f"Setting user_id_for_time: {data}") # Log user ID for time setting.
-        return TIME_WAITING # Move to TIME_WAITING state.
-
-    elif query.data.startswith("pr_"): # If callback is to set price for order (admin panel).
-        data = query.data[3:] # Extract order ID from callback data.
-        await query.edit_message_text("Пожалуйста отправьте цену...") # Ask admin to input price.
-        context.user_data['order_id_for_price'] = data # Store order ID in user data to use in next message handler.
-        return PRICE_WAITING # Move to PRICE_WAITING state.
-
-    elif query.data.startswith("mk_"): # If callback is to mark order as "MAKING" (admin panel).
-        data = query.data[3:].split("_") # Extract order ID and user ID from callback data.
-        order_operations.change_status("MAKING", data[0]) # Update order status in database to "MAKING".
-        await context.bot.sendMessage(data[1], "Над вашим заказом началась работа ⚙...") # Send message to user informing that work has started.
-    elif query.data.startswith("bn_"): # If callback is to ban user (admin panel).
-        data = query.data[3:] # Extract user ID from callback data.
-        user_operations.ban_user(data) # Ban the user in the database.
-        await query.edit_message_text("Пользователь заблокирован!") # Inform admin that user is banned.
-
-    elif query.data.startswith("delord_"): # If callback is to delete order (admin panel).
-        data = query.data[7:] # Extract order ID from callback data.
-        order_operations.delete_order(data) # Delete order from database.
-        await query.edit_message_text("Заказ удален!") # Inform admin that order is deleted.
-
-    elif query.data.startswith("py_"): # If callback is to mark order as "PAYING" (admin panel).
-        data = query.data[3:].split("_") # Extract order ID and user ID from callback data.
-        paying.append({"ord_id": data[0], "user_id": data[1]}) # Add order to paying list.
-        await query.edit_message_text("Пожалуйста отправьте ссылку на бота для теста пользователя...") # Ask admin to send bot link for user testing.
-        context.user_data['order_id_for_link'] = data[0] # Store order ID in user data for next message handler.
-        context.user_data['user_id_for_link'] = data[1] # Store user ID in user data for next message handler.
-        return LINK_WAITING # Move to LINK_WAITING state.
-
-    elif query.data.startswith("cor_"): # If callback is to request clarification from user (admin panel).
-        parts = query.data[4:].split("_") # Extract user ID and order ID from callback data.
-        user_id = int(parts[0]) # Get user ID.
-        ord_id = parts[1] # Get order ID.
-
-        await query.edit_message_text(text=f"Введите уточнение для пользователя с ID: {user_id} по заказу {ord_id}:") # Ask admin to input clarification message.
-
-        context.user_data['clarification'] = {"target_user_id": user_id, "ord_id": ord_id} # Store clarification data in user data.
-        return CLARIFICATION_REQUEST # Move to CLARIFICATION_REQUEST state.
-
-    elif query.data == "QUESTIONS": # If callback is to view support questions (admin panel).
-        try:
-            questions = questions_operations.get_questions() # Get all support questions from database.
-            if not questions: # If no questions found.
-                await query.edit_message_text(text="Нет вопросов!") # Inform admin that no questions found.
-            keyboard = []
-            text = ""
-            for question in questions: # Iterate through each question.
-                text += f"Вопрос {question[0]}: \nПользователь {encrypter.decode(question[1])} с вопросом: {encrypter.decode(question[2])}\n" # Build message text with question details (decode encrypted data).
-                keyboard.append([InlineKeyboardButton(f"{question[0]}", callback_data=f"q_{question[0]}")]) # Add button for each question ID.
-            reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with question ID buttons.
-            await query.edit_message_text(text=text, reply_markup=reply_markup) # Edit message to display question list with buttons.
-        except Exception as e: # Catch any errors during question retrieval.
-            await query.edit_message_text(text=f"Ошибка: {str(e)}") # Inform admin about error.
-    elif query.data.startswith("q_"): # If callback is to view a specific question (admin panel).
-        data = query.data[2:] # Extract question ID from callback data.
-        question = questions_operations.get_question(data) # Get question details from database using question ID.
-        keyboard = []
-        keyboard.append([InlineKeyboardButton("Ответить", callback_data=f"ans_{question[0]}")]) # Add button to answer the question.
-        keyboard.append([InlineKeyboardButton("НАЗАД", callback_data="QUESTIONS")]) # Button to go back to question list.
-        reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with answer and back buttons.
-        await query.edit_message_text(text=f"Вопрос {question[0]}: \nПользователь {encrypter.decode(question[1])} \nВопрос: {encrypter.decode(question[2])}", reply_markup=reply_markup) # Edit message to display question details and action buttons (decode encrypted data).
-    elif query.data.startswith("ans_"): # If callback is to answer a question (admin panel).
-        data = query.data[4:] # Extract question ID from callback data.
-        question = questions_operations.get_question(data) # Get question details from database using question ID.
-        await query.edit_message_text(text=f"Ответьте на вопрос пользователя {encrypter.decode(question[1])} с вопросом: {encrypter.decode(question[2])}") # Ask admin to input answer (decode encrypted data).
-        context.user_data['question_id_for_answer'] = data # Store question ID in user data for next message handler.
-        return ANSWER_WAITING # Move to ANSWER_WAITING state.
-    elif query.data == "pys": # If callback is for user agreeing to the time (user response).
-        await query.edit_message_text(text="Мы рады что вы доверяете нам ❤") # Positive feedback to user.
-    elif query.data.startswith("nt_"): # If callback is for user disagreeing to time/price (user response).
-        data = query.data[3:] # Extract order ID from callback data.
-        order_operations.change_status("COMPLETED", data) # Change order status to "COMPLETED" (implicitly meaning cancelled/rejected).
-        await query.edit_message_text(text="Мы приносим извинения что вам не понравилось :(. Вы можете оставить отзыв командой /feedback.") # Apology and suggestion to leave feedback.
-    else: # If unknown callback data received.
-        await query.edit_message_text(text="Неизвестный запрос.") # Inform admin about unknown request.
 
 
 async def handle_time_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -365,6 +208,7 @@ async def handle_answer_message(update: Update, context: ContextTypes.DEFAULT_TY
     question = questions_operations.get_question(question_id) # Get question details using question ID.
     await context.bot.send_message(chat_id=encrypter.decode(question[1]), text=f"Ответ на ваш вопрос: {answer}") # Send the answer to the user who asked the question (decode user ID).
     await update.message.reply_text("Ваш ответ отправлен.") # Inform admin that answer is sent.
+    await questions_operations.delete_question(question_id) # Delete the question after answering
     return ConversationHandler.END # End the conversation.
 
 async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -378,6 +222,13 @@ async def handle_support_message(update: Update, context: ContextTypes.DEFAULT_T
     """Handles the support message input from user in SUPPORT_WAITING state."""
     user_id = update.effective_user.id # Get user ID.
     message = update.message.text # Get support message from user.
+    username = update.effective_user.username # Get username
+    spam.check_for_spam(message) # Check for spam in the message
+    user_operations.check_for_user(username, user_id) # Check if user exists, create if not
+    block = user_operations.check_for_block(user_id) # Check if user is blocked
+    if block:
+        await update.message.reply_text("Вы были заблокированы!") # Inform blocked user
+        return ConversationHandler.END
     try:
         await update.message.reply_text("Ваше сообщение отправлено в поддержку.") # Confirm message sent to user.
         questions_operations.add_question(user_id, message) # Add the question to the database.
@@ -541,7 +392,7 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
         user_operations.subscribe(user_id) # Update user subscription status in database.
 
     else: # If unknown payment payload.
-        await context.bot.send_message(chat_id=update.effective_user.id, text="Ошибка при обработке оплаты.") # Inform user about payment processing error.
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="Ошибка при обработке оплаты.") # Inform user about payment processing error.
 
 async def edit_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /edit command to allow users to edit their order description."""
@@ -594,7 +445,7 @@ async def privacy_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Откройте политику конфиденциальности через эту кнопку (Или откройте напрямую в браузере: https://nini123456789niki.github.io/BotsNiNi/):", reply_markup=reply_markup) # Send privacy policy message with button and direct link.
 
 async def privacy_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = []
-    keyboard.append([InlineKeyboardButton("Политика конфиденциальности", url="https://t.me/NiNi_bots_bot/privacy_policy")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Откройте политику конфиденциальности через эту кнопку (Или откройте напрямую в браузере: https://nini123456789niki.github.io/BotsNiNi/):", reply_markup=reply_markup)
+    keyboard = [] # Privacy Policy Keyboard
+    keyboard.append([InlineKeyboardButton("Политика конфиденциальности", url="https://t.me/NiNi_bots_bot/privacy_policy")]) # Privacy Policy Keyboard mini app adding
+    reply_markup = InlineKeyboardMarkup(keyboard) # # Privacy Policy Keyboard Reply Markup
+    await update.message.reply_text("Откройте политику конфиденциальности через эту кнопку (Или откройте напрямую в браузере: https://nini123456789niki.github.io/BotsNiNi/):", reply_markup=reply_markup) # Privacy Policy Message
