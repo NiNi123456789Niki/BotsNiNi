@@ -179,8 +179,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         question = questions_operations.get_question(data) # Get question details from the database using question ID
         keyboard = []
         keyboard.append([InlineKeyboardButton("Ответить", callback_data=f"ans_{question[0]}")]) # Button to answer the question
-        keyboard.append([InlineKeyboardButton("Удалить вопрос", callback_data=f"delq_{question[1]}")]) # Button to delete the question (using user ID as callback data, might be incorrect, should be question ID)
-        keyboard.append([InlineKeyboardButton("Заблокировать пользователя", callback_data=f"bn_{question[1]}")]) # Button to ban the user who asked the question
+        keyboard.append([InlineKeyboardButton("Удалить вопрос", callback_data=f"delq_{encrypter.decode(question[1])}")]) # Button to delete the question (using user ID as callback data, might be incorrect, should be question ID)
+        keyboard.append([InlineKeyboardButton("Заблокировать пользователя", callback_data=f"bn_{encrypter.decode(question[1])}")]) # Button to ban the user who asked the question
         keyboard.append([InlineKeyboardButton("НАЗАД", callback_data="QUESTIONS")]) # Button to go back to the questions list
         reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with question action buttons
         await query.edit_message_text(text=f"Вопрос {question[0]}: \nПользователь {encrypter.decode(question[1])} \nВопрос: {encrypter.decode(question[2])}", reply_markup=reply_markup) # Edit message to show question details and action buttons
@@ -193,10 +193,6 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "back_to_admin":
         """Handles clicks on "BACK TO ADMIN PANEL" button (if implemented). Currently triggered by /admin command."""
-        if not update.message or not update.message.text:
-            logger.warning("Получено пустое сообщение или объект update.message")
-            await context.bot.send_message(chat_id=update.effective_chat.id, text="Произошла ошибка при обработке команды. Пожалуйста, попробуйте позже.")
-            return
 
         user_id = update.effective_user.id # Get user ID
         if user_id == int(YOUR_CHAT_ID): # Check if user is admin
