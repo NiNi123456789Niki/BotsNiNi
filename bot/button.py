@@ -204,9 +204,9 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard.append([InlineKeyboardButton("ВОПРОСЫ", callback_data="QUESTIONS")]) # Button to view questions
             reply_markup = InlineKeyboardMarkup(keyboard) # Create inline keyboard with admin panel options
 
-            await update.message.reply_text("Какие заказы показывать сегодня:", reply_markup=reply_markup) # Send admin panel options message
+            await query.edit_message_text("Какие заказы показывать сегодня:", reply_markup=reply_markup) # Send admin panel options message
         else:
-            await update.message.reply_text('У вас нет прав для выполнения этой команды.') # Inform user about lack of admin rights
+            await query.edit_message_text('У вас нет прав для выполнения этой команды.') # Inform user about lack of admin rights
 
     elif query.data.startswith("ans_"):
         """Handles clicks on "Answer" button to enter ANSWER_WAITING state."""

@@ -350,7 +350,7 @@ async def pay_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /pay command to initiate payment for an order."""
     chat_id = update.effective_chat.id # Get chat ID.
     order = order_operations.get_order_from_tid(chat_id) # Get order details using user ID (chat ID).
-    if order == "Empty": # If no order found for the user.
+    if order is None: # If no order found for the user.
         await context.bot.send_message(chat_id=chat_id, text="У вас нет заказов!") # Inform user about no orders.
     elif order[2] == "PAYING": # If order status is "PAYING".
         title = "Оплата за бота" # Invoice title.
@@ -358,7 +358,7 @@ async def pay_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         payload = f"pay_{order[0]}" # Custom payload to identify the payment type and order ID.
         provider_token = PROVIDER_TOKEN # Get provider token from config.
         currency = "UZS" # Set currency to UZS.
-        prices = [LabeledPrice("Цена", order[3] * 100)] # Define price based on order price from database (multiplied by 100 for cents/tiyin).
+        prices = [LabeledPrice("Цена", int(order[3]) * 100)] # Define price based on order price from database (multiplied by 100 for cents/tiyin).
 
         await context.bot.send_invoice( # Send the invoice to the user.
             chat_id=chat_id,
