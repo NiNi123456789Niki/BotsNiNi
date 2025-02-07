@@ -129,13 +129,17 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handles clicks on "Ban User" button to ban the user."""
         data = query.data[3:] # Extract user ID from callback data
         user_operations.ban_user(data) # Ban the user in the database
+        order_operations.delete_order(data)# Deleting the user's order, they won't need it anymore :) Delete this if you dont need
         await query.edit_message_text("Пользователь заблокирован!") # Inform admin that user is banned
+        keyboard.append([InlineKeyboardButton("НАЗАД", callback_data="back_to_admin")]) # Dont forget return to admin
 
     elif query.data.startswith("delord_"):
         """Handles clicks on "Delete Order" button to delete the order."""
         data = query.data[7:] # Extract order ID from callback data
         order_operations.delete_order(data) # Delete the order from the database
         await query.edit_message_text("Заказ удален!") # Inform admin that order is deleted
+        
+        keyboard.append([InlineKeyboardButton("НАЗАД", callback_data="back_to_admin")]) # Dont forget return to admin also
 
     elif query.data.startswith("py_"):
         """Handles clicks on "Finish Making" button to move order to PAYING state and ask for bot link."""
@@ -190,9 +194,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         data = query.data[5:] # Extract user ID from callback data (again, might be question ID instead)
         await context.bot.send_message(data, "Ваш вопрос был удален!") # Send message to the user (using user ID, should be question ID to identify the question for admin purposes)
         questions_operations.delete_question_with_tid(data) # Delete the question from the database using user ID (should be question ID)
+        
+        keyboard.append([InlineKeyboardButton("НАЗАД", callback_data="QUESTIONS")]) # return to the questions for the continuation of the working day :( 
 
     elif query.data == "back_to_admin":
-        """Handles clicks on "BACK TO ADMIN PANEL" button (if implemented). Currently triggered by /admin command."""
+        """Handles clicks on "BACK TO ADMIN PANEL"."""
 
         user_id = update.effective_user.id # Get user ID
         if user_id == int(YOUR_CHAT_ID): # Check if user is admin
